@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Reward Win</title>
+<script>
+(function(){
+ if(window.top!==window.self){try{window.top.location=window.self.location;}catch(e){document.documentElement.innerHTML='';}}
+ var bl=function(e){e.preventDefault();return false;};
+ document.addEventListener('contextmenu',bl);document.addEventListener('dragstart',bl);
+ document.addEventListener('keydown',function(e){var k=(e.key||'').toLowerCase();if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['i','j','c'].indexOf(k)>-1)||(e.ctrlKey&&['u','s'].indexOf(k)>-1))return bl(e);});
+})();
+</script>
+<meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{--blue:#002f9e;--blue2:#0a45c8;--bg:#eef2ff;--card:#fff;--soft:#eaeefd;}
+*{-webkit-tap-highlight-color:transparent;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:#0f172a;user-select:none;}
+.hdr{background:linear-gradient(135deg,#001f7a,#0a45c8 70%,#0b57d8);border-radius:0 0 32px 32px;position:relative;overflow:hidden;}
+.hdr:before{content:'';position:absolute;left:-40px;top:-60px;width:260px;height:200px;background:#00258f;border-radius:50%;opacity:.7;}
+.hdr:after{content:'';position:absolute;right:-60px;top:-30px;width:240px;height:160px;background:#0b57d8;border-radius:50%;opacity:.5;}
+.hdr>*{position:relative;z-index:2;}
+.card{background:#fff;border-radius:24px;box-shadow:0 4px 18px rgba(0,47,158,.07);}
+.soft{background:var(--soft);border-radius:20px;}
+.pill-coin{background:#fdf0bd;border-radius:999px;}
+.pill-inr{background:#d9f3e2;border-radius:999px;}
+.btn{background:var(--blue);color:#fff;font-weight:700;border-radius:14px;transition:.15s;}
+.btn:active{transform:scale(.97);}
+.btn[disabled]{opacity:.5;}
+.btn-out{background:#fff;color:var(--blue);border:2px solid var(--blue);font-weight:700;border-radius:14px;}
+.inp{background:#f1f4ff;border:1.5px solid #d6defa;border-radius:14px;padding:.85rem 1rem;width:100%;outline:none;font-weight:500;color:#0f172a;}
+.inp:focus{border-color:var(--blue);}
+.nav{position:fixed;bottom:calc(10px + var(--adh,0px));left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:456px;background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(0,47,158,.18);display:grid;grid-template-columns:repeat(3,1fr);padding:6px;z-index:60;}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0;border-radius:16px;font-size:13px;font-weight:700;color:#111;}
+.nav a.on{background:var(--blue);color:#fff;}
+.page{display:none;animation:up .25s ease-out;}
+.page.on{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes zoomIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal.hidden{display:none;}
+.modal>div{animation:zoomIn .2s ease-out;}
+.tile{border-radius:20px;padding:14px;min-height:150px;position:relative;overflow:hidden;border:1.5px solid;}
+.row{background:#fff;border-radius:20px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,47,158,.05);}
+.reward-pill{border:2px solid #e8b923;border-radius:14px;padding:8px 10px;font-weight:800;color:var(--blue);white-space:nowrap;background:#fffdf3;}
+.day{min-width:92px;border-radius:18px;background:#e6ebfd;text-align:center;padding-top:10px;overflow:hidden;border:2px solid #fff;}
+.day.done{background:#bfe6c8;}
+.day.today{border-color:#e8b923;}
+.day b{font-size:26px;display:block;}
+.day span{display:block;margin:8px 0 0;background:#d7defa;font-size:12px;font-weight:600;padding:5px 0;}
+#splash{transition:opacity .5s;z-index:9000;}
+.hide-scroll::-webkit-scrollbar{display:none;}
+canvas{touch-action:none;}
+</style>
+</head>
+<body class="max-w-md mx-auto min-h-screen relative overflow-x-hidden">
+
+<div id="loader" class="modal hidden" style="z-index:8000"><div class="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-white"></div></div>
+
+<div id="splash" class="fixed inset-0 flex flex-col items-center justify-center" style="background:linear-gradient(135deg,#001f7a,#0a45c8)">
+  <img src="https://i.ibb.co/KpkcB28F/file-000000006f0c82309de61122fb359c51.png" class="w-32 h-32 rounded-full mb-5 shadow-2xl animate-pulse">
+  <h1 class="text-4xl font-extrabold text-white tracking-widest">Reward Win</h1>
+</div>
+
+<!-- AUTH -->
+<div id="auth" class="hidden min-h-screen px-6 py-10 flex-col justify-center">
+  <div class="text-center mb-6">
+    <img src="https://i.ibb.co/KpkcB28F/file-000000006f0c82309de61122fb359c51.png" class="w-24 h-24 mx-auto rounded-full shadow-lg mb-3">
+    <h2 id="auth-title" class="text-3xl font-extrabold text-[#002f9e]">Welcome Back!</h2>
+    <p id="auth-sub" class="text-gray-500 text-sm mt-1">Login to continue earning</p>
+  </div>
+  <div class="card p-5 space-y-3">
+    <input id="a-name" class="inp hidden" placeholder="Full Name">
+    <input id="a-email" type="email" class="inp" placeholder="Email Address">
+    <input id="a-pass" type="password" class="inp" placeholder="Password">
+    <input id="a-pass2" type="password" class="inp hidden" placeholder="Confirm Password">
+    <input id="a-ref" class="inp hidden uppercase" placeholder="Referral Code (optional)">
+    <button id="a-btn" class="btn w-full py-3.5 text-lg">Login</button>
+    <button id="a-forgot" class="w-full text-sm font-semibold text-[#0a45c8]">Forgot Password?</button>
+    <p class="text-center text-sm text-gray-500"><span id="a-switch-text">Don't have an account?</span> <button id="a-switch" class="font-bold text-[#002f9e]">Register</button></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden min-h-screen">
+  <header id="hdr" class="hdr px-5 pt-6 pb-5"></header>
+  <main id="view" class="px-3 pt-4 pb-28" style="padding-bottom:calc(7rem + var(--adh,0px))"></main>
+  <nav class="nav" id="nav">
+    <a data-p="home"><i data-lucide="home" class="w-6 h-6"></i>Home</a>
+    <a data-p="wallet"><i data-lucide="wallet" class="w-6 h-6"></i>Wallet</a>
+    <a data-p="profile"><i data-lucide="user" class="w-6 h-6"></i>Profile</a>
+  </nav>
+</div>
+
+<div id="modal" class="modal hidden"></div>
+
+<script type="module">
+const firebaseConfig={apiKey:"AIzaSyAYnOHuEhXrvrzW2iNL38x1jN9ob0CJRnU",authDomain:"reward-win-5c3eb.firebaseapp.com",databaseURL:"https://reward-win-5c3eb-default-rtdb.firebaseio.com",projectId:"reward-win-5c3eb",storageBucket:"reward-win-5c3eb.firebasestorage.app",messagingSenderId:"783189071456",appId:"1:783189071456:web:229d4622b8db822a8e9505",measurementId:"G-RNNV8Q1FBQ"};
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,updateProfile,signOut,deleteUser} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,setDoc,getDoc,updateDoc,deleteDoc,collection,addDoc,serverTimestamp,query,where,getDocs,orderBy,limit,onSnapshot,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const today=()=>new Date().toLocaleDateString('en-CA');
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fc=n=>Number(n||0).toLocaleString('en-IN');
+const inr=n=>'₹ '+(Math.round((Number(n)||0)*100)/100).toFixed(2);
+const r2=n=>Math.round(n*100)/100;
+const ic=()=>window.lucide&&lucide.createIcons();
+
+const DEF={coinsPerRupee:1000,minConvert:1000,minWithdrawal:10,paymentMethods:['UPI','Paytm'],signupBonus:3000,referralBonus:5000,refereeBonus:1000,
+ dailyRewards:[100,150,200,250,300,350,500],spinRewards:[100,250,300,350,500,700,800,1000],spinsPerDay:1,
+ scratchMin:50,scratchMax:300,scratchDailyLimit:5,captchaReward:100,captchaDailyLimit:10,videoReward:100,videoDailyLimit:10,videoCooldown:30,
+ pollQuestion:'',pollOptions:[],pollReward:100,appTasks:[],contactLink:'',faqLink:'',termsLink:'',privacyLink:''};
+let cfg={...DEF},user=null,ud=null,notifs=[],page='home',stack=[],unsubCfg=null,unsubUser=null,unsubNotif=null,unsubSubs=null,unsubW=null,mySubs={};
+
+if(window.Telegram?.WebApp){Telegram.WebApp.expand();Telegram.WebApp.ready();try{Telegram.WebApp.setHeaderColor('#002f9e')}catch(e){}}
+
+// ---------- UI helpers ----------
+const loading=on=>$('#loader').classList.toggle('hidden',!on);
+function modal(html){const m=$('#modal');m.innerHTML=html;m.classList.remove('hidden');ic();}
+function closeModal(){$('#modal').classList.add('hidden');$('#modal').innerHTML='';}
+window.closeModal=closeModal;
+function alertBox(msg,title){modal(`<div class="card p-6 w-full max-w-sm text-center">${title?`<h3 class="text-xl font-extrabold text-[#002f9e] mb-2">${title}</h3>`:''}<p class="mb-5 text-gray-700">${msg}</p><button onclick="closeModal()" class="btn w-full py-3">OK</button></div>`);}
+// OK dabane par pehle ad dikhega, phir onOk chalega
+function resultModal(title,msg,onOk){
+ modal(`<div class="card p-6 w-full max-w-sm text-center" style="position:relative;z-index:7000"><h3 class="text-xl font-extrabold text-[#002f9e] mb-2">${title}</h3><p class="mb-5 text-gray-700">${msg}</p><button id="r-ok" class="btn w-full py-3">OK</button></div>`);
+ const b=$('#r-ok');let fired=false;
+ const h=async e=>{e.preventDefault();e.stopPropagation();if(fired)return;fired=true;closeModal();loading(1);try{await showAd('interstitial');}catch(x){}loading(0);if(onOk)onOk();};
+ setTimeout(()=>{b.addEventListener('click',h);b.addEventListener('touchend',h);},350);
+}
+function confirmBox(msg,ok){modal(`<div class="card p-6 w-full max-w-sm text-center"><p class="mb-5 text-gray-800 font-semibold">${msg}</p><div class="flex gap-3"><button onclick="closeModal()" class="btn-out flex-1 py-3">Cancel</button><button id="c-ok" class="btn flex-1 py-3">Yes</button></div></div>`);$('#c-ok').onclick=()=>{closeModal();ok();};}
+
+// ---------- AUTH ----------
+let mode='login';
+function setMode(m){mode=m;const reg=m==='register';
+ ['#a-name','#a-pass2','#a-ref'].forEach(s=>$(s).classList.toggle('hidden',!reg));
+ $('#auth-title').textContent=reg?'Create Account':'Welcome Back!';
+ $('#auth-sub').textContent=reg?'Join Reward Win and start earning':'Login to continue earning';
+ $('#a-btn').textContent=reg?'Sign Up':'Login';
+ $('#a-switch').textContent=reg?'Login':'Register';
+ $('#a-switch-text').textContent=reg?'Already have an account?':"Don't have an account?";
+ $('#a-forgot').classList.toggle('hidden',reg);}
+$('#a-switch').onclick=()=>setMode(mode==='login'?'register':'login');
+$('#a-forgot').onclick=async()=>{const e=$('#a-email').value.trim();if(!e)return alertBox('Enter your email first.');loading(1);try{await sendPasswordResetEmail(auth,e);alertBox('Password reset link sent to your email.');}catch(x){alertBox(x.message)}loading(0);};
+$('#a-btn').onclick=async()=>{
+ const email=$('#a-email').value.trim(),pass=$('#a-pass').value;
+ if(!email||!pass)return alertBox('Enter email and password.');
+ loading(1);
+ try{
+  if(mode==='login'){await signInWithEmailAndPassword(auth,email,pass);}
+  else{
+   const name=$('#a-name').value.trim(),p2=$('#a-pass2').value,ref=$('#a-ref').value.trim().toUpperCase();
+   if(!name)throw new Error('Enter your name.');
+   if(pass.length<6)throw new Error('Password must be at least 6 characters.');
+   if(pass!==p2)throw new Error('Passwords do not match.');
+   window.__pendingRef=ref;
+   const cr=await createUserWithEmailAndPassword(auth,email,pass);
+   await updateProfile(cr.user,{displayName:name});
+   const bonus=Number(cfg.signupBonus)||0;
+   await setDoc(doc(db,'users',cr.user.uid),{uid:cr.user.uid,name,email,balance:bonus,wallet:0,referralCode:Math.random().toString(36).substring(2,10).toUpperCase(),referredBy:null,referralCount:0,referralEarnings:0,createdAt:serverTimestamp(),isBlocked:false,checkinStreak:0,lastCheckInDate:'1970-01-01',daily:{date:today()},completedAppTasks:[]});
+   if(bonus>0)await tx(cr.user.uid,bonus,'Welcome Bonus','welcome_bonus');
+  }
+ }catch(e){alertBox(e.message.replace('Firebase: ',''));}
+ loading(0);
+};
+
+async function tx(uid,amount,type,source){await addDoc(collection(db,'users',uid,'transactions'),{amount,type,source,description:source,timestamp:serverTimestamp()});}
+
+onAuthStateChanged(auth,async u=>{
+ if(!u){stopLive();user=null;ud=null;$('#app').classList.add('hidden');$('#auth').classList.remove('hidden');$('#auth').classList.add('flex');hideSplash();return;}
+ user=u;
+ if(unsubCfg)unsubCfg();
+ unsubCfg=onSnapshot(doc(db,'config','main'),s=>{cfg={...DEF,...(s.exists()?s.data():{})};if(ud&&['home','wallet','profile'].includes(page)&&!$('#modal').innerHTML)render();});
+ let snap;for(let i=0;i<5;i++){snap=await getDoc(doc(db,'users',u.uid));if(snap.exists())break;await new Promise(r=>setTimeout(r,600));}
+ ud=snap.exists()?snap.data():null;
+ if(!ud){await signOut(auth);return;}
+ if(ud.isBlocked){showBanned();return;}
+ normDaily();
+ $('#auth').classList.add('hidden');$('#auth').classList.remove('flex');$('#app').classList.remove('hidden');
+ hideSplash();
+ if(window.__pendingRef){const c=window.__pendingRef;window.__pendingRef='';applyReferral(c,true);}
+ go('home',true);
+ startLive(u.uid);
+ ensureUid();
+});
+
+// ---------- AUTO PLAYER UID ----------
+let uidBusy=false;
+async function ensureUid(){
+ if(uidBusy||!user||!ud||ud.gameUid)return ud?.gameUid||'';
+ uidBusy=true;
+ try{
+  for(let i=0;i<10;i++){
+   const id=String(Math.floor(10000000+Math.random()*90000000));
+   try{await setDoc(doc(db,'uidClaims',id),{userId:user.uid,createdAt:serverTimestamp()});}catch(e){continue;}
+   await updateDoc(doc(db,'users',user.uid),{gameUid:id});ud.gameUid=id;
+   if(page==='profile'&&!$('#modal').innerHTML)render();
+   return id;
+  }
+ }catch(e){}
+ finally{uidBusy=false;}
+ return '';
+}
+
+// ---------- LIVE SYNC ----------
+function showBanned(){document.body.innerHTML='<div class="h-screen flex items-center justify-center p-6 text-center"><div class="card p-8"><h1 class="text-2xl font-extrabold text-red-600 mb-2">Account Banned</h1><p class="text-gray-600">Your account has been suspended by the administrator.</p></div></div>';}
+function stopLive(){[unsubUser,unsubNotif,unsubSubs,unsubW].forEach(f=>f&&f());unsubUser=unsubNotif=unsubSubs=unsubW=null;mySubs={};}
+function startLive(uid){
+ stopLive();let first=true;
+ unsubUser=onSnapshot(doc(db,'users',uid),s=>{
+  if(!s.exists()){if(!first){stopLive();signOut(auth).then(()=>location.reload());}return;}
+  const d=s.data();if(d.isBlocked){stopLive();showBanned();return;}
+  ud=d;normDaily();$$('.balcard').forEach(e=>e.innerHTML=balInner());
+  if(first){first=false;return;}
+  if(!$('#modal').innerHTML){
+   if(page==='home'||page==='profile')render();
+   else if(page==='history')setTimeout(()=>{if(page==='history'&&!$('#modal').innerHTML)hSet(hTab);},700);
+  }
+ },()=>{});
+ unsubNotif=onSnapshot(query(collection(db,'notifications'),orderBy('createdAt','desc'),limit(20)),s=>{
+  notifs=s.docs.map(d=>({id:d.id,...d.data()}));
+  if(page==='notifications')render();else{header();ic();}
+ },()=>{});
+ unsubW=onSnapshot(query(collection(db,'withdrawals'),where('userId','==',uid)),()=>{
+  if($('#modal').innerHTML)return;
+  if(page==='wallet')loadWithdrawList('#w-list',5);else if(page==='history'&&hTab==='withdraw')hSet('withdraw');
+ },()=>{});
+ unsubSubs=onSnapshot(query(collection(db,'taskSubmissions'),where('userId','==',uid)),s=>{
+  mySubs={};
+  s.docs.forEach(d=>{const x=d.data(),k=x.taskKey,p=mySubs[k];if(!p||(x.submittedAt?.seconds??1e12)>=(p.submittedAt?.seconds??1e12))mySubs[k]={id:d.id,...x};});
+  if(page==='home'&&!$('#modal').innerHTML)render();
+ },()=>{});
+}
+function hideSplash(){const s=$('#splash');s.style.opacity=0;setTimeout(()=>s.style.display='none',500);}
+
+// ---------- DATA ----------
+function normDaily(){if(!ud.daily||ud.daily.date!==today())ud.daily={date:today()};}
+const dget=k=>{normDaily();return Number(ud.daily[k]||0);};
+async function dinc(k){normDaily();ud.daily[k]=dget(k)+1;await updateDoc(doc(db,'users',user.uid),{daily:ud.daily});}
+async function addCoins(n,type,source){await updateDoc(doc(db,'users',user.uid),{balance:increment(n)});await tx(user.uid,n,type,source);}
+// Ads: AdMob (Banner / Interstitial / Rewarded) AdsBridge ke through
+window.__adDone=null;
+window.onAdResult=ok=>{const f=window.__adDone;window.__adDone=null;if(f)f(!!ok);};
+function showAd(kind){return new Promise((res,rej)=>{
+ if(window.AdsBridge&&typeof window.AdsBridge.show==='function'){
+  let fin=false;const t=setTimeout(()=>{if(fin)return;fin=true;window.__adDone=null;rej('Ad abhi load nahi hua. Thodi der baad try karo.');},25000);
+  window.__adDone=ok=>{if(fin)return;fin=true;clearTimeout(t);ok?res():rej('Reward ke liye ad poora dekhna zaroori hai.');};
+  try{window.AdsBridge.show(kind||'interstitial');}catch(e){fin=true;clearTimeout(t);rej('Ad dikha nahi paaya.');}
+  return;}
+ rej('Ads sirf Reward Win app me chalte hain. App se try karo.');});}
+if(window.AdsBridge){try{const h=Number(window.AdsBridge.bannerHeight())||0;document.documentElement.style.setProperty('--adh',h+'px');}catch(e){}}
+const coinsToInr=c=>r2((Number(c)||0)/(cfg.coinsPerRupee||1000));
+
+// ---------- NAV / HEADER ----------
+const TABS=['home','wallet','profile'];
+const TITLES={history:'History',notifications:'Notifications',ranking:'Ranking',spin:'Lucky Spin',scratch:'Scratch Card',captcha:'Play Captcha',poll:'Today Poll'};
+function go(p,reset){if(reset)stack=[];else if(page!==p)stack.push(page);page=p;render();window.scrollTo(0,0);}
+window.go=go;
+window.back=()=>{page=stack.pop()||'home';render();};
+function header(){
+ const sub=!TABS.includes(page);
+ const bell=`<button onclick="go('notifications')" class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center relative"><i data-lucide="bell" class="w-6 h-6 text-yellow-300"></i><span id="dot" class="${notifs.length&&localStorage.getItem('seen_'+user.uid)!==String(notifs[0]?.id)?'':'hidden'} absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full"></span></button>`;
+ $('#hdr').innerHTML=sub
+  ?`<div class="flex items-center justify-between"><button onclick="back()" class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center"><i data-lucide="arrow-left" class="w-6 h-6 text-white"></i></button><h1 class="text-2xl font-bold text-white">${TITLES[page]||''}</h1>${bell}</div>`
+  :`<div class="flex items-center justify-between"><div class="flex items-center gap-3"><img src="https://i.ibb.co/KpkcB28F/file-000000006f0c82309de61122fb359c51.png" class="w-12 h-12 rounded-full"><h1 class="text-2xl font-bold text-white">Reward</h1>${page==='home'?'<span class="bg-green-200 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">● Active</span>':''}</div>${bell}</div>`;
+}
+$$('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.p,true));
+
+function balInner(){return `<div class="flex items-center justify-between"><div class="text-center flex-1"><div class="pill-coin inline-flex items-center gap-2 px-4 py-2 text-2xl font-extrabold"><span class="text-2xl">🪙</span>${fc(Math.max(0,ud.balance||0))}</div><p class="font-bold mt-2">Coins</p></div><div class="w-px h-14 border-l-2 border-dotted border-gray-400"></div><div class="text-center flex-1"><div class="pill-inr inline-flex items-center gap-2 px-4 py-2 text-2xl font-extrabold"><span class="text-xl">💵</span>${inr(Math.max(0,ud.wallet||0))}</div><p class="font-bold mt-2">Your Balance</p></div></div>`;}
+function balCard(){return `<div class="soft p-3 balcard">${balInner()}</div>`;}
+function quick(){const b=(i,l,c,fn)=>`<button onclick="${fn}" class="flex flex-col items-center gap-2"><div class="w-16 h-16 rounded-2xl bg-[#e6ebfd] flex items-center justify-center text-3xl">${i}</div><span class="font-bold text-sm">${l}</span></button>`;
+ return `<div class="grid grid-cols-4">${b('🎁','Invite','','openInvite()')}${b('🧾','History','',"go('history')")}${b('🏆','Ranking','',"go('ranking')")}${b('💸','Withdraw','',"go('wallet',true)")}</div>`;}
+
+function render(){
+ if(!ud)return;
+ header();
+ $$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===page));
+ $('#nav').style.display=TABS.includes(page)?'grid':'none';
+ const v=$('#view');
+ const R={home:rHome,wallet:rWallet,profile:rProfile,history:rHistory,notifications:rNotifs,ranking:rRanking,spin:rSpin,scratch:rScratch,captcha:rCaptcha,poll:rPoll};
+ v.innerHTML='';(R[page]||rHome)(v);ic();
+}
+
+// ---------- HOME ----------
+function rHome(v){
+ const left=(k,l)=>l>0?Math.max(0,l-dget(k)):'∞';
+ const streak=ud.checkinStreak||0,claimed=ud.lastCheckInDate===today();
+ const days=(cfg.dailyRewards||[]).map((r,i)=>{const done=claimed?i<streak:i<streak;const isToday=!claimed&&i===(streak%7);return `<div class="day ${done?'done':''} ${isToday?'today':''}"><b>${fc(r)}</b><span>Day ${String(i+1).padStart(2,'0')}${done?' ✓':''}</span></div>`;}).join('');
+ const tasks=(cfg.appTasks||[]).map((t,i)=>{const key=t.link||t.name,sub=mySubs[key];const done=(ud.completedAppTasks||[]).includes(key)||sub?.status==='approved';const pend=!done&&sub?.status==='pending',rej=!done&&sub?.status==='rejected';
+  const pill=done?'<div class="reward-pill">✔ Done</div>':pend?'<div class="reward-pill" style="border-color:#ea8a1f;color:#b45309">⏳ Pending</div>':rej?'<div class="reward-pill" style="border-color:#dc2626;color:#dc2626">✖ Retry</div>':'<div class="reward-pill">💰+'+fc(t.reward)+'</div>';
+  return `<div class="row" onclick="${done?'':`openTask(${i})`}" style="${done?'opacity:.55':''}">${t.logo?`<img src="${esc(t.logo)}" class="w-16 h-16 rounded-2xl object-contain bg-white border" onerror="this.outerHTML='<div class=&quot;w-16 h-16 rounded-2xl bg-[#e6ebfd] flex items-center justify-center text-2xl font-extrabold text-[#002f9e]&quot;>${esc((t.name||'?')[0])}</div>'">`:`<div class="w-16 h-16 rounded-2xl bg-[#e6ebfd] flex items-center justify-center text-2xl font-extrabold text-[#002f9e]">${esc((t.name||'?')[0])}</div>`}<div class="flex-1 min-w-0"><p class="font-bold truncate">${esc(t.name)}</p><p class="text-gray-500 text-sm truncate">${esc(t.desc)}</p></div>${pill}</div>`;}).join('');
+ v.innerHTML=`<div class="card p-3">${balCard()}<div class="mt-4 mb-1">${quick()}</div></div>
+ <div onclick="go('poll')" class="mt-4 rounded-3xl p-5 relative overflow-hidden text-white" style="background:linear-gradient(135deg,#60b4f2,#4b92f0);min-height:150px"><div class="absolute right-2 bottom-0 text-[110px] leading-none opacity-90">💰</div><h2 class="text-3xl font-extrabold">Today Poll</h2><p class="text-[#0b3a9c] font-semibold mt-1 max-w-[60%]">Answer Questions &amp; Earn Coins</p><div class="inline-flex items-center gap-2 bg-white text-black font-extrabold text-xl rounded-full px-4 py-1.5 mt-3">🪙 ${fc(cfg.pollReward)}</div></div>
+ <div class="grid grid-cols-3 gap-3 mt-4">
+  <div onclick="go('spin')" class="tile" style="background:linear-gradient(135deg,#ffe3ea,#ffd0dc);border-color:#f7b4c4"><p class="font-extrabold leading-tight">Lucky<br>Time</p><div class="absolute right-[-18px] top-6 text-6xl">🎡</div><p class="text-gray-500 text-sm mt-6">earn upto</p><span class="bg-white/70 rounded-full px-2 py-1 text-sm font-extrabold inline-block mt-1">🪙 ${fc(Math.max(...(cfg.spinRewards||[0])))}+</span></div>
+  <div onclick="go('scratch')" class="tile" style="background:linear-gradient(135deg,#dff6f1,#e8f7ff);border-color:#b8e6e3"><p class="font-extrabold leading-tight">Scratch<br>Card</p><div class="absolute right-[-10px] top-6 text-6xl">🎟️</div><p class="text-gray-500 text-sm mt-6">earn upto</p><span class="bg-white/70 rounded-full px-2 py-1 text-sm font-extrabold inline-block mt-1">🪙 ${fc(cfg.scratchMax)}+</span></div>
+  <div onclick="go('captcha')" class="tile" style="background:linear-gradient(135deg,#efe6fb,#ddd0f6);border-color:#cdbdf0"><p class="font-extrabold leading-tight">Play<br>Captcha</p><div class="absolute right-[-6px] top-8 text-5xl">✅</div><p class="text-gray-500 text-sm mt-6">earn upto</p><span class="bg-white/70 rounded-full px-2 py-1 text-sm font-extrabold inline-block mt-1">🪙 ${fc(cfg.captchaReward)}+</span></div>
+ </div>
+ <div class="grid grid-cols-2 gap-3 mt-4">
+  <button onclick="watchVideo()" class="row justify-center font-extrabold text-[#002f9e]" style="background:#fff7df;border:2px solid #f2d27a">🎬 Watch Video</button>
+  <button onclick="convertModal()" class="row justify-center font-extrabold text-[#002f9e]" style="background:#d8e2fb;border:2px solid #b4c6f5">🪙 Convert Coins</button>
+ </div>
+ <h3 class="text-2xl font-extrabold mt-6 mb-3 px-1">Daily Rewards</h3>
+ <div class="flex gap-3 overflow-x-auto hide-scroll pb-2">${days}</div>
+ <button id="ci" onclick="checkin()" class="btn w-full py-3.5 mt-2 text-lg" ${claimed?'disabled':''}>${claimed?'Claimed Today ✓':'Claim Daily Reward'}</button>
+ <h3 class="text-2xl font-extrabold mt-6 mb-3 px-1">App Tasks</h3>
+ <div class="space-y-3">${tasks||'<div class="card p-8 text-center text-gray-400">No app tasks right now.</div>'}</div>`;
+}
+
+window.checkin=async()=>{
+ if(ud.lastCheckInDate===today())return;
+ loading(1);
+ try{
+  const y=new Date(Date.now()-864e5).toLocaleDateString('en-CA');
+  let streak=ud.lastCheckInDate===y?(ud.checkinStreak||0):0;
+  if(streak>=(cfg.dailyRewards||[]).length)streak=0;
+  const r=Number(cfg.dailyRewards[streak])||0;
+  await addCoins(r,'Checkin Reward','checkins');
+  ud.checkinStreak=streak+1;ud.lastCheckInDate=today();
+  await updateDoc(doc(db,'users',user.uid),{checkinStreak:ud.checkinStreak,lastCheckInDate:ud.lastCheckInDate});
+  render();alertBox(`You received ${fc(r)} coins!`,'Daily Reward');
+ }catch(e){alertBox(e.message);}
+ loading(0);
+};
+
+window.watchVideo=async()=>{
+ const lim=Number(cfg.videoDailyLimit)||0;
+ if(lim>0&&dget('video')>=lim)return alertBox('Daily video limit reached. Come back tomorrow!');
+ const wait=(Number(cfg.videoCooldown)||0)*1000-(Date.now()-(ud.lastVideoTime||0));
+ if(wait>0)return alertBox(`Please wait ${Math.ceil(wait/1000)}s.`);
+ loading(1);
+ try{await showAd('rewarded');const r=Number(cfg.videoReward)||0;await addCoins(r,'Video Reward','watch_video');await dinc('video');ud.lastVideoTime=Date.now();await updateDoc(doc(db,'users',user.uid),{lastVideoTime:ud.lastVideoTime});render();alertBox(`+${fc(r)} coins added!`);}
+ catch(e){alertBox(String(e.message||e));}
+ loading(0);
+};
+
+
+// ---------- IMAGE PICK HELPERS ----------
+const AV=['😎','🦁','🐯','🦊','🐼','🐸','🦄','🔥','👑','🚀','🎮','⚡'];
+const AVC=['#fde68a','#bfdbfe','#fecaca','#bbf7d0','#e9d5ff','#fed7aa'];
+function avatarData(e,i){const c=document.createElement('canvas');c.width=c.height=240;const x=c.getContext('2d');x.fillStyle=AVC[i%AVC.length];x.fillRect(0,0,240,240);x.font='140px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(e,120,132);return c.toDataURL('image/jpeg',.85);}
+function fileLabel(id,text){return `<label class="btn-out block w-full py-2.5 text-center relative overflow-hidden cursor-pointer" style="font-size:15px">${text}<input id="${id}" type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer"></label>`;}
+function loadUrlImg(u,max){return new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.7));}catch(e){res(u);}};im.onerror=()=>rej(new Error('Link se image load nahi hui'));im.src=u;});}
+
+// ---------- APP TASKS (proof + admin approval) ----------
+function readImg(file,max=720,q=.65){return new Promise((res,rej)=>{const rd=new FileReader();rd.onerror=()=>rej(new Error('Image read failed'));rd.onload=()=>{const im=new Image();im.onerror=()=>rej(new Error('Invalid image'));im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q));};im.src=rd.result;};rd.readAsDataURL(file);});}
+window.openTask=i=>{
+ const t=cfg.appTasks[i];if(!t)return;const key=t.link||t.name,sub=mySubs[key];
+ if(sub?.status==='pending')return alertBox('Your proof is under review. Coins will be added once admin approves.','Pending ⏳');
+ let img=null;
+ modal(`<div class="card p-6 w-full max-w-sm space-y-3 text-center" style="max-height:92vh;overflow-y:auto"><h3 class="text-xl font-extrabold text-[#002f9e]">${esc(t.name)}</h3><p class="text-gray-600">${esc(t.desc)}</p><div class="reward-pill inline-block">💰 +${fc(t.reward)} coins</div>
+ ${sub?.status==='rejected'?`<p class="text-sm font-semibold text-red-600 bg-red-50 rounded-xl p-2">Rejected${sub.rejectNote?': '+esc(sub.rejectNote):''}. Submit again.</p>`:''}
+ <p class="text-sm text-gray-500 text-left">1. Tap <b>Open Task</b> &amp; complete it.<br>2. Submit proof (screenshot / username).<br>3. Coins are added after admin approval.${t.hint?`<br><b>Note:</b> ${esc(t.hint)}`:''}</p>
+ <button id="tp-open" class="btn-out w-full py-2.5">Open Task</button>
+ <p class="text-sm font-bold text-[#002f9e] bg-[#e6ebfd] rounded-xl py-2">🎮 Your UID: ${esc(ud.gameUid||'generating...')}</p>
+ <input id="tp-text" class="inp" placeholder="Username used in that app (optional)" maxlength="100">
+ ${fileLabel('tp-file','📷 Upload Screenshot')}
+ <input id="tp-url" class="inp" placeholder="ya screenshot ka image link paste karo (optional)">
+ <img id="tp-prev" class="hidden w-full max-h-48 object-contain rounded-xl border bg-white">
+ <p id="tp-err" class="text-red-600 text-sm font-semibold hidden"></p>
+ <button id="tp-send" class="btn w-full py-3" style="background:#16a34a">Submit Proof</button>
+ <button onclick="closeModal()" class="text-gray-500 text-sm font-semibold">Close</button></div>`);
+ $('#tp-open').onclick=()=>{const l=t.link||'';if(!l)return;if(window.Telegram?.WebApp?.openLink)Telegram.WebApp.openLink(l);else window.open(l,'_blank');};
+ $('#tp-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{img=await readImg(f);const p=$('#tp-prev');p.src=img;p.classList.remove('hidden');}catch(x){img=null;const er=$('#tp-err');er.textContent='Image load nahi hui, dobara try karo.';er.classList.remove('hidden');}};
+ $('#tp-send').onclick=async()=>{
+  let gid=ud.gameUid||'';const txt=$('#tp-text').value.trim(),url=$('#tp-url').value.trim(),er=$('#tp-err');
+  if(!gid){gid=await ensureUid();if(!gid){er.textContent='UID abhi ban nahi paya, thodi der baad try karo.';er.classList.remove('hidden');return;}}
+  if(!txt&&!img&&!url){er.textContent='Screenshot ya username proof me do.';er.classList.remove('hidden');return;}
+  const b=$('#tp-send');b.disabled=true;b.textContent='Submitting...';
+  try{
+   if(!img&&url){try{img=await loadUrlImg(url,720);}catch(x){img=url;}}
+   await addDoc(collection(db,'taskSubmissions'),{userId:user.uid,userName:ud.name||'',userEmail:ud.email||'',gameUid:gid,taskKey:key,taskName:t.name||'',reward:Number(t.reward)||0,proofText:txt,proofImage:img||'',status:'pending',submittedAt:serverTimestamp()});
+   closeModal();alertBox('Proof submitted! Coins will be added after admin approval.','Submitted ✅');
+  }catch(e){b.disabled=false;b.textContent='Submit Proof';er.textContent=e.message.replace('Firebase: ','');er.classList.remove('hidden');}
+ };
+};
+
+// ---------- SPIN ----------
+let spinRot=0,spinning=false;
+function wheelSvg(vals){const n=vals.length,r=150,cx=160,cy=160,cols=['#e11d48','#6d28d9','#2563eb','#7e22ce'];let s='';
+ for(let i=0;i<n;i++){const a0=(i*360/n-90)*Math.PI/180,a1=((i+1)*360/n-90)*Math.PI/180;
+  s+=`<path d="M${cx},${cy} L${cx+r*Math.cos(a0)},${cy+r*Math.sin(a0)} A${r},${r} 0 0,1 ${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)} Z" fill="${cols[i%cols.length]}" stroke="#111" stroke-width="2"/>`;
+  s+=`<text x="${cx}" y="${cy-r+40}" fill="#fff" font-size="22" font-weight="800" text-anchor="middle" transform="rotate(${(i+.5)*360/n} ${cx} ${cy})">${vals[i]}</text>`;}
+ return `<svg id="wheel" viewBox="0 0 320 320" style="width:100%;height:100%;transition:transform 4s cubic-bezier(.17,.67,.12,1);transform:rotate(${spinRot}deg)">${s}</svg>`;}
+function rSpin(v){
+ const lim=Number(cfg.spinsPerDay)||1,used=dget('spin');
+ document.body.style.background='linear-gradient(180deg,#001a8a,#0a45c8)';
+ v.innerHTML=`<div class="text-center pt-2"><div class="inline-block rounded-3xl px-8 py-3 mb-5" style="background:#1b2060;border:4px solid #5b7cf0"><p class="text-white text-4xl font-extrabold leading-none">100%</p><p class="text-4xl font-extrabold" style="color:#facc15">WIN</p></div>
+ <div class="relative mx-auto" style="width:310px;height:310px"><div class="absolute inset-0 rounded-full" style="background:#c8922a;padding:10px"><div class="w-full h-full rounded-full overflow-hidden bg-black">${wheelSvg(cfg.spinRewards)}</div></div>
+ <div class="absolute left-1/2 -top-3 -translate-x-1/2 z-10 text-3xl">🔻</div>
+ <button id="spin-btn" onclick="doSpin()" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full font-extrabold text-white text-xl z-10" style="background:radial-gradient(#f1c464,#c8922a);border:4px solid #e8b94a">Spin</button></div>
+ <p class="text-white text-4xl font-extrabold mt-6">${Math.min(used,lim)}/${lim}</p><p class="text-white mt-1">${used>=lim?'You have used all your spins':'Spin the wheel to win coins!'}</p></div>`;
+}
+const _back=window.back;window.back=()=>{document.body.style.background='';_back();};
+const _go=window.go;window.go=(p,r)=>{if(p!=='spin')document.body.style.background='';_go(p,r);};
+window.doSpin=async()=>{
+ if(spinning)return;const lim=Number(cfg.spinsPerDay)||1;
+ if(dget('spin')>=lim)return alertBox('You have used all your spins today.');
+ spinning=true;
+ try{await dinc('spin');}catch(e){spinning=false;return alertBox(e.message);}
+ const vals=cfg.spinRewards,n=vals.length,idx=Math.floor(Math.random()*n),am=(idx+.5)*360/n;
+ const cur=((spinRot%360)+360)%360,delta=((360-am)-cur+360)%360;
+ spinRot+=360*6+delta;$('#wheel').style.transform=`rotate(${spinRot}deg)`;
+ setTimeout(async()=>{
+  const r=Number(vals[idx])||0;
+  try{await addCoins(r,'Lucky Spin Reward','lucky_spin');}catch(e){}
+  spinning=false;
+  if(page==='spin'){render();document.body.style.background='linear-gradient(180deg,#001a8a,#0a45c8)';}
+  alertBox(`You won ${fc(r)} coins!`,'🎉 Congratulations');
+ },4300);
+};
+
+// ---------- SCRATCH ----------
+let scratchReward=0;
+function rScratch(v){
+ const lim=Number(cfg.scratchDailyLimit)||0,left=lim>0?Math.max(0,lim-dget('scratch')):'∞';
+ v.innerHTML=`<div class="card p-5 text-center"><h2 class="text-2xl font-extrabold text-[#002f9e]">Scratch &amp; Win</h2><p class="text-gray-500 text-sm mb-4">Scratch the card to reveal your coins. Left today: <b>${left}</b></p>
+ <div id="sc-wrap" class="relative mx-auto rounded-2xl overflow-hidden" style="width:280px;height:160px;background:linear-gradient(135deg,#fde68a,#f59e0b)"><div id="sc-prize" class="absolute inset-0 flex flex-col items-center justify-center"><div class="text-5xl">🪙</div><p class="text-3xl font-extrabold text-[#7c2d12]" id="sc-text">?</p></div><canvas id="sc-cv" width="280" height="160" class="absolute inset-0 hidden"></canvas></div>
+ <button id="sc-start" onclick="startScratch()" class="btn w-full py-3.5 mt-5 text-lg">New Scratch Card</button></div>`;
+}
+window.startScratch=async()=>{
+ const lim=Number(cfg.scratchDailyLimit)||0;
+ if(lim>0&&dget('scratch')>=lim)return alertBox('Daily scratch card limit reached.');
+ const mn=Number(cfg.scratchMin)||0,mx=Math.max(mn,Number(cfg.scratchMax)||mn);
+ scratchReward=mn+Math.floor(Math.random()*(mx-mn+1));
+ try{await dinc('scratch');}catch(e){return alertBox(e.message);}
+ $('#sc-text').textContent=fc(scratchReward);$('#sc-start').disabled=true;
+ const cv=$('#sc-cv');cv.classList.remove('hidden');const ctx=cv.getContext('2d');
+ const g=ctx.createLinearGradient(0,0,280,160);g.addColorStop(0,'#9ca3af');g.addColorStop(1,'#d1d5db');ctx.fillStyle=g;ctx.fillRect(0,0,280,160);
+ ctx.fillStyle='#4b5563';ctx.font='bold 22px Poppins';ctx.textAlign='center';ctx.fillText('SCRATCH HERE',140,88);
+ ctx.globalCompositeOperation='destination-out';let down=false,moves=0,done=false;
+ const pos=e=>{const b=cv.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return [(p.clientX-b.left)*280/b.width,(p.clientY-b.top)*160/b.height];};
+ const scr=e=>{if(!down||done)return;e.preventDefault();const [x,y]=pos(e);ctx.beginPath();ctx.arc(x,y,20,0,7);ctx.fill();
+  if(++moves%8===0){const d=ctx.getImageData(0,0,280,160).data;let c=0;for(let i=3;i<d.length;i+=16)if(d[i]===0)c++;if(c/(d.length/16)>.5){done=true;finishScratch();}}};
+ cv.onmousedown=cv.ontouchstart=e=>{down=true;scr(e);};cv.onmousemove=cv.ontouchmove=scr;
+ window.onmouseup=window.ontouchend=()=>down=false;
+};
+async function finishScratch(){
+ const cv=$('#sc-cv');if(cv){cv.onmousedown=cv.ontouchstart=cv.onmousemove=cv.ontouchmove=null;cv.classList.add('hidden');}
+ window.onmouseup=window.ontouchend=null;
+ try{await addCoins(scratchReward,'Scratch Card Reward','scratch_card');}catch(e){}
+ resultModal('🎉 Scratch Card',`You won ${fc(scratchReward)} coins!`,()=>render());
+}
+
+// ---------- CAPTCHA ----------
+let capCode='';
+function newCap(){const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';capCode='';for(let i=0;i<5;i++)capCode+=ch[Math.floor(Math.random()*ch.length)];}
+function rCaptcha(v){
+ const lim=Number(cfg.captchaDailyLimit)||0,left=lim>0?Math.max(0,lim-dget('captcha')):'∞';newCap();
+ v.innerHTML=`<div class="card p-5 text-center space-y-4"><h2 class="text-2xl font-extrabold text-[#002f9e]">Type the code</h2><p class="text-gray-500 text-sm">Reward: <b>${fc(cfg.captchaReward)}</b> coins • Left today: <b>${left}</b></p>
+ <div id="cap" class="mx-auto rounded-2xl py-5 text-4xl font-extrabold tracking-[.4em]" style="background:repeating-linear-gradient(45deg,#e6ebfd,#e6ebfd 8px,#d6defa 8px,#d6defa 16px);color:#002f9e;font-style:italic;text-decoration:line-through wavy #f59e0b">${capCode}</div>
+ <input id="cap-in" class="inp text-center text-xl font-bold uppercase" placeholder="Enter code" maxlength="5">
+ <button onclick="submitCap()" class="btn w-full py-3.5 text-lg">Verify &amp; Claim</button><button onclick="render2()" class="text-[#0a45c8] font-semibold text-sm">↻ New code</button></div>`;
+}
+window.render2=()=>render();
+window.submitCap=async()=>{
+ const lim=Number(cfg.captchaDailyLimit)||0;if(lim>0&&dget('captcha')>=lim)return alertBox('Daily captcha limit reached.');
+ if($('#cap-in').value.trim().toUpperCase()!==capCode){render();return alertBox('Wrong code, try again!');}
+ loading(1);try{await dinc('captcha');const r=Number(cfg.captchaReward)||0;await addCoins(r,'Captcha Reward','captcha');resultModal('✅ Captcha',`+${fc(r)} coins added!`,()=>render());}catch(e){alertBox(e.message);}loading(0);
+};
+
+// ---------- POLL ----------
+function rPoll(v){
+ const opts=cfg.pollOptions||[];
+ if(!cfg.pollQuestion||!opts.length){v.innerHTML='<div class="card p-10 text-center text-gray-400">No poll available today.</div>';return;}
+ const done=dget('poll')>0;
+ v.innerHTML=`<div class="card p-5 space-y-3"><h2 class="text-xl font-extrabold text-[#002f9e]">${esc(cfg.pollQuestion)}</h2><p class="text-gray-500 text-sm">Answer &amp; earn <b>${fc(cfg.pollReward)}</b> coins</p>
+ ${opts.map((o,i)=>`<button ${done?'disabled':''} onclick="answerPoll(${i})" class="btn-out w-full py-3.5 text-left px-4" style="${done?'opacity:.5':''}">${esc(o)}</button>`).join('')}
+ ${done?'<p class="text-center text-green-600 font-semibold">You already answered today. Come back tomorrow!</p>':''}</div>`;
+}
+window.answerPoll=async()=>{if(dget('poll')>0)return;loading(1);try{await dinc('poll');const r=Number(cfg.pollReward)||0;await addCoins(r,'Poll Reward','poll');render();alertBox(`Thanks! +${fc(r)} coins added.`);}catch(e){alertBox(e.message);}loading(0);};
+
+// ---------- WALLET ----------
+function rWallet(v){
+ const methods=cfg.paymentMethods&&cfg.paymentMethods.length?cfg.paymentMethods:['UPI'];
+ v.innerHTML=`<div class="card p-3">${balCard()}
+ <button onclick="convertModal()" class="w-full mt-3 py-3.5 rounded-2xl font-extrabold text-[#002f9e]" style="background:#d8e2fb;border:2px solid #b4c6f5">🪙 Convert Coins to ₹</button>
+ <p class="text-center text-xs text-gray-500 mt-2">${fc(cfg.coinsPerRupee)} coins = ₹1 • Minimum convert ${fc(cfg.minConvert)} coins</p></div>
+ <div class="card p-5 mt-4 space-y-3"><h3 class="text-xl font-extrabold">Withdraw Money</h3>
+  <input id="w-amt" type="number" inputmode="decimal" class="inp" placeholder="Amount (₹) — min ${cfg.minWithdrawal}">
+  <select id="w-method" class="inp">${methods.map(m=>`<option>${esc(m)}</option>`).join('')}</select>
+  <input id="w-detail" class="inp" placeholder="UPI ID / Number">
+  <button id="w-btn" onclick="withdraw()" class="btn w-full py-3.5 text-lg">Request Payout</button></div>
+ <h3 class="text-xl font-extrabold mt-5 mb-2 px-1">Recent Payouts</h3><div id="w-list" class="space-y-2"><p class="text-center text-gray-400 py-4">Loading...</p></div>`;
+ const sel=$('#w-method'),det=$('#w-detail');const upd=()=>det.placeholder=/paytm/i.test(sel.value)?'Paytm Number':/upi/i.test(sel.value)?'UPI ID':'Payment details';sel.onchange=upd;upd();
+ loadWithdrawList('#w-list',5);
+}
+async function loadWithdrawList(sel,n){
+ try{const s=await getDocs(query(collection(db,'withdrawals'),where('userId','==',user.uid),limit(30)));const el=$(sel);if(!el)return;
+  const arr=s.docs.map(d=>d.data()).sort((a,b)=>(b.requestedAt?.seconds||0)-(a.requestedAt?.seconds||0)).slice(0,n);
+  if(!arr.length){el.innerHTML='<p class="text-center text-gray-400 py-6">No withdrawals yet.</p>';return;}
+  const col={pending:'#ea8a1f',approved:'#16a34a',rejected:'#dc2626'};
+  el.innerHTML=arr.map(r=>`<div class="row"><div class="flex-1"><p class="font-extrabold">${inr(r.amountInr??0)}</p><p class="text-xs text-gray-500">${esc(r.method)} • ${r.requestedAt?r.requestedAt.toDate().toLocaleDateString('en-IN'):''}</p></div><span class="text-white text-xs font-bold uppercase px-3 py-1 rounded-lg" style="background:${col[r.status]||'#999'}">${esc(r.status)}</span></div>`).join('');
+ }catch(e){const el=$(sel);if(el)el.innerHTML='<p class="text-center text-red-500 py-4">Failed to load.</p>';}
+}
+window.withdraw=async()=>{
+ const amt=r2(parseFloat($('#w-amt').value)),method=$('#w-method').value,detail=$('#w-detail').value.trim();
+ if(!(amt>0))return alertBox('Enter a valid amount.');
+ if(amt<cfg.minWithdrawal)return alertBox(`Minimum withdrawal is ₹${cfg.minWithdrawal}.`);
+ if(amt>(ud.wallet||0))return alertBox('Not enough balance. Convert coins to ₹ first.');
+ if(!detail)return alertBox('Enter your payment details.');
+ confirmBox(`Withdraw ${inr(amt)} via ${esc(method)}?`,async()=>{
+  loading(1);
+  try{
+   await updateDoc(doc(db,'users',user.uid),{wallet:increment(-amt)});
+   await addDoc(collection(db,'withdrawals'),{userId:user.uid,userName:ud.name,userEmail:ud.email||'',amountInr:amt,method,paymentDetail:detail,status:'pending',requestedAt:serverTimestamp()});
+   render();alertBox('Payout request submitted!');
+  }catch(e){alertBox(e.message);}
+  loading(0);
+ });
+};
+window.convertModal=()=>{
+ const rate=cfg.coinsPerRupee||1000;
+ modal(`<div class="card p-6 w-full max-w-sm space-y-3"><h3 class="text-xl font-extrabold text-[#002f9e] text-center">Convert Coins</h3><p class="text-center text-sm text-gray-500">${fc(rate)} coins = ₹1 • You have <b>${fc(ud.balance)}</b> coins</p>
+ <input id="cv-in" type="number" inputmode="numeric" class="inp text-center text-xl font-bold" placeholder="Coins" value="${Math.floor((ud.balance||0)/rate)*rate||''}">
+ <p class="text-center font-extrabold text-green-700" id="cv-out">${inr(coinsToInr(Math.floor((ud.balance||0)/rate)*rate))}</p>
+ <div class="flex gap-3"><button onclick="closeModal()" class="btn-out flex-1 py-3">Cancel</button><button id="cv-ok" class="btn flex-1 py-3">Convert</button></div></div>`);
+ $('#cv-in').oninput=()=>$('#cv-out').textContent=inr(coinsToInr(Math.floor((+$('#cv-in').value||0)/rate)*rate));
+ $('#cv-ok').onclick=async()=>{
+  const rate=cfg.coinsPerRupee||1000;let c=Math.floor((+$('#cv-in').value||0)/rate)*rate;
+  if(c<Math.max(cfg.minConvert||0,rate))return alert2(`Minimum convert is ${fc(Math.max(cfg.minConvert||0,rate))} coins.`);
+  if(c>(ud.balance||0))return alert2('Not enough coins.');
+  const rs=r2(c/rate);closeModal();loading(1);
+  try{await updateDoc(doc(db,'users',user.uid),{balance:increment(-c),wallet:increment(rs)});await tx(user.uid,-c,'Coins Converted','convert');render();alertBox(`${fc(c)} coins converted to ${inr(rs)}.`);}catch(e){alertBox(e.message);}
+  loading(0);
+ };
+};
+const alert2=m=>{closeModal();setTimeout(()=>alertBox(m),50);};
+
+// ---------- PROFILE ----------
+function rProfile(v){
+ const lnk=(icon,label,url,bg)=>`<div onclick="${url?`openLink('${esc(url)}')`:`alertBox('Not available yet.')`}" class="row mb-3" style="background:${bg};border:1.5px solid #dbe3fb"><span class="text-3xl">${icon}</span><p class="font-extrabold text-lg">${label}</p></div>`;
+ v.innerHTML=`<div class="text-center"><img src="${ud.photo?esc(ud.photo):'https://i.ibb.co/KpkcB28F/file-000000006f0c82309de61122fb359c51.png'}" class="w-36 h-36 rounded-full mx-auto shadow-lg object-cover bg-white"><h2 class="text-3xl font-extrabold mt-3">${esc(ud.name)} <button onclick="editProfile()" class="text-2xl align-middle">✏️</button></h2><p class="text-gray-500 font-medium">${esc(ud.email)}</p><p class="inline-block mt-1 bg-[#e6ebfd] text-[#002f9e] font-bold text-sm rounded-full px-3 py-1">🎮 UID: ${ud.gameUid?esc(ud.gameUid):'generating...'}</p></div>
+ <div class="card p-3 mt-4">${balCard()}<h3 class="font-extrabold text-lg mt-4 mb-2 px-1">Quick Access</h3>${quick()}</div>
+ <div class="mt-4"><div onclick="openSupport()" class="row mb-3" style="background:linear-gradient(90deg,#fff,#d9f3e2);border:1.5px solid #bfe6c8"><span class="text-3xl">🛟</span><p class="font-extrabold text-lg">Help &amp; Support</p></div>${lnk('💬','Contact Us',cfg.contactLink,'linear-gradient(90deg,#fff,#c9d9fb)')}${lnk('❓','FAQs',cfg.faqLink,'linear-gradient(90deg,#fff,#ffeaea)')}${lnk('📋','Terms and Conditions',cfg.termsLink,'linear-gradient(90deg,#fff,#e0f0ff)')}${lnk('🛡️','Privacy Policy',cfg.privacyLink,'linear-gradient(90deg,#fff,#eaffd9)')}
+ <div onclick="logout()" class="row mb-3" style="background:linear-gradient(90deg,#fff,#fde4f4);border:1.5px solid #f5c9e6"><span class="text-3xl">🚪</span><p class="font-extrabold text-lg">Logout</p></div>
+ <div onclick="delAccount()" class="row mb-3" style="background:linear-gradient(90deg,#fff,#ffe0e0);border:1.5px solid #f5b9b9"><span class="text-3xl">🗑️</span><p class="font-extrabold text-lg">Delete Account</p></div></div>`;
+}
+window.openLink=u=>{if(window.Telegram?.WebApp?.openLink)Telegram.WebApp.openLink(u);else window.open(u,'_blank');};
+window.logout=()=>confirmBox('Are you sure you want to logout?',async()=>{await signOut(auth);location.reload();});
+window.delAccount=()=>confirmBox('Delete your account permanently? This cannot be undone.',async()=>{
+ loading(1);try{await deleteDoc(doc(db,'users',user.uid));await deleteUser(auth.currentUser);location.reload();}catch(e){loading(0);alertBox('Please logout, login again and retry. '+e.message);}
+});
+
+// ---------- EDIT PROFILE ----------
+window.editProfile=()=>{
+ let newPhoto=null;
+ modal(`<div class="card p-6 w-full max-w-sm text-center space-y-3" style="max-height:92vh;overflow-y:auto"><h3 class="text-xl font-extrabold text-[#002f9e]">Edit Profile</h3>
+ <img id="ep-img" src="${ud.photo?esc(ud.photo):'https://i.ibb.co/KpkcB28F/file-000000006f0c82309de61122fb359c51.png'}" class="w-28 h-28 rounded-full mx-auto object-cover shadow bg-white">
+ ${fileLabel('ep-file','📷 Gallery se Photo')}
+ <input id="ep-url" class="inp text-center text-sm" placeholder="ya photo ka link paste karo (optional)">
+ <p class="text-xs text-gray-500">ya avatar chuno</p>
+ <div class="grid grid-cols-6 gap-2">${AV.map((e,i)=>`<button type="button" data-i="${i}" class="avb text-2xl rounded-xl py-1" style="background:${AVC[i%AVC.length]}">${e}</button>`).join('')}</div>
+ <input id="ep-name" class="inp text-center font-bold" value="${esc(ud.name)}" placeholder="Your name" maxlength="30">
+ <p class="text-sm font-bold text-[#002f9e] bg-[#e6ebfd] rounded-xl py-2">🎮 UID: ${esc(ud.gameUid||'generating...')} <span class="text-xs text-gray-500">(automatic)</span></p>
+ <p id="ep-err" class="text-red-600 text-sm font-semibold hidden"></p>
+ <div class="flex gap-3"><button onclick="closeModal()" class="btn-out flex-1 py-3">Cancel</button><button id="ep-save" class="btn flex-1 py-3">Save</button></div></div>`);
+ $$('.avb').forEach(b=>b.onclick=()=>{newPhoto=avatarData(AV[+b.dataset.i],+b.dataset.i);$('#ep-img').src=newPhoto;});
+ $('#ep-file').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const im=await readImg(f,600,.8);const i=new Image();i.onload=()=>{const S=240,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d'),m=Math.min(i.width,i.height);x.drawImage(i,(i.width-m)/2,(i.height-m)/2,m,m,0,0,S,S);newPhoto=c.toDataURL('image/jpeg',.8);$('#ep-img').src=newPhoto;};i.src=im;}
+  catch(x){const er=$('#ep-err');er.textContent='Photo load nahi hui. Avatar chuno ya dobara try karo.';er.classList.remove('hidden');}
+ };
+ $('#ep-save').onclick=async()=>{
+  const name=$('#ep-name').value.trim();if(!name)return;
+  loading(1);
+  try{
+   const pu=$('#ep-url').value.trim();
+   if(pu&&!newPhoto){try{const d=await loadUrlImg(pu,240);newPhoto=d.startsWith('data:')?d:null;if(!newPhoto)throw 0;}catch(x){loading(0);const er=$('#ep-err');er.textContent='Link se photo load nahi hui.';er.classList.remove('hidden');return;}}
+   const upd={name};if(newPhoto)upd.photo=newPhoto;
+   await updateDoc(doc(db,'users',user.uid),upd);
+   try{await updateProfile(auth.currentUser,{displayName:name});}catch(e){}
+   closeModal();render();
+  }catch(e){alertBox(e.message);}
+  loading(0);
+ };
+};
+
+// ---------- HELP & SUPPORT ----------
+window.openSupport=async()=>{
+ modal(`<div class="card p-5 w-full max-w-sm" style="max-height:92vh;overflow-y:auto"><div class="flex justify-between items-center mb-3"><h3 class="text-xl font-extrabold text-[#002f9e]">Help &amp; Support</h3><button onclick="closeModal()" class="text-2xl font-bold">✕</button></div>
+ <input id="sp-sub" class="inp mb-2" placeholder="Subject (e.g. Withdrawal, Task)" maxlength="60"><textarea id="sp-msg" class="inp h-24" placeholder="Apni problem likho..." maxlength="500"></textarea>
+ <p id="sp-err" class="text-red-600 text-sm font-semibold hidden mt-1"></p>
+ <button id="sp-send" class="btn w-full py-3 mt-2">Send</button>
+ <h4 class="font-extrabold mt-4 mb-2">Meri Requests</h4><div id="sp-list" class="space-y-2 text-sm"><p class="text-gray-400 text-center py-3">Loading...</p></div></div>`);
+ const load=async()=>{try{const q=await getDocs(query(collection(db,'tickets'),where('userId','==',user.uid),limit(20)));const el=$('#sp-list');if(!el)return;
+  const a=q.docs.map(d=>d.data()).sort((x,y)=>(y.createdAt?.seconds||0)-(x.createdAt?.seconds||0));
+  el.innerHTML=a.length?a.map(t=>`<div class="soft p-3"><div class="flex justify-between"><b>${esc(t.subject)}</b><span class="text-xs font-bold ${t.status==='closed'?'text-green-600':'text-orange-600'}">${t.status==='closed'?'REPLIED':'OPEN'}</span></div><p class="text-gray-600">${esc(t.message)}</p>${t.reply?`<p class="mt-1 text-[#002f9e] font-semibold">Admin: ${esc(t.reply)}</p>`:''}</div>`).join(''):'<p class="text-gray-400 text-center py-3">Koi request nahi.</p>';}catch(e){const el=$('#sp-list');if(el)el.innerHTML='<p class="text-red-500 text-center">Load nahi hua.</p>';}};
+ load();
+ $('#sp-send').onclick=async()=>{const sub=$('#sp-sub').value.trim(),msg=$('#sp-msg').value.trim(),er=$('#sp-err');
+  if(!sub||!msg){er.textContent='Subject aur message likho.';er.classList.remove('hidden');return;}
+  const b=$('#sp-send');b.disabled=true;
+  try{await addDoc(collection(db,'tickets'),{userId:user.uid,userName:ud.name||'',userEmail:ud.email||'',gameUid:ud.gameUid||'',subject:sub,message:msg,status:'open',reply:'',createdAt:serverTimestamp()});$('#sp-sub').value=$('#sp-msg').value='';load();}
+  catch(e){er.textContent=e.message;er.classList.remove('hidden');}
+  b.disabled=false;};
+};
+
+// ---------- INVITE ----------
+window.openInvite=()=>{
+ const applied=!!ud.referredBy;
+ modal(`<div class="w-full max-w-sm relative"><button onclick="closeModal()" class="absolute -top-10 right-1 text-white text-3xl font-extrabold">✕</button>
+ <div class="rounded-3xl p-5 text-center" style="background:#f1f4ff"><div class="text-7xl mb-2">🤝</div><h2 class="text-3xl font-extrabold">Earn ${fc(cfg.referralBonus)} Coins</h2><p class="text-gray-500 mt-1">Share Your Every Referral And Earn ${fc(cfg.referralBonus)} Coins Instantly</p>
+ <div class="rounded-2xl px-4 py-3 mt-4 flex justify-between items-center font-bold" style="background:linear-gradient(90deg,#a8c0ff,#d8b4fe)"><span>Total Referral</span><span class="bg-white rounded-xl px-5 py-1 text-xl font-extrabold">${ud.referralCount||0}</span></div>
+ <div class="rounded-2xl px-4 py-3 mt-3 flex justify-between items-center font-bold" style="background:linear-gradient(90deg,#a8c0ff,#d8b4fe)"><span>Total Referral Earnings</span><span class="bg-white rounded-xl px-5 py-1 text-xl font-extrabold">${fc(ud.referralEarnings||0)}</span></div>
+ <div class="mt-4 rounded-xl border-2 border-dashed border-amber-400 px-4 py-3 flex justify-between items-center" style="background:#fffbe8"><span class="font-bold tracking-widest text-lg">${esc(ud.referralCode)}</span><button onclick="copyCode()" class="text-2xl">📋</button></div>
+ <button onclick="shareCode()" class="btn w-full py-4 mt-4 text-xl">Invite Now</button>
+ ${applied?`<p class="text-green-600 font-semibold mt-3 text-sm">Code applied: ${esc(ud.referredBy)}</p>`:`<div class="flex gap-2 mt-4"><input id="ref-in" class="inp uppercase text-center font-bold" placeholder="Have a code?"><button onclick="applyFromInput()" class="btn px-5">Apply</button></div>`}</div></div>`);
+};
+window.copyCode=()=>navigator.clipboard.writeText(ud.referralCode).then(()=>{alert2('Code copied!');}).catch(()=>{});
+window.shareCode=()=>{const t=`Join Reward Win & earn real money! Use my code ${ud.referralCode} to get a bonus.`;
+ if(window.Telegram?.WebApp?.openTelegramLink)Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(t)}`);
+ else if(navigator.share)navigator.share({title:'Reward Win',text:t,url:location.href}).catch(()=>{});else copyCode();};
+window.applyFromInput=()=>applyReferral($('#ref-in').value.trim().toUpperCase(),false);
+async function applyReferral(code,silent){
+ if(ud.referredBy){if(!silent)alert2('You already applied a code.');return;}
+ if(!code||code===ud.referralCode){if(!silent)alert2('Invalid code.');return;}
+ loading(1);
+ try{
+  const s=await getDocs(query(collection(db,'users'),where('referralCode','==',code),limit(1)));
+  if(s.empty){loading(0);if(!silent)alert2('Code not found.');return;}
+  const rd=s.docs[0],ref=Number(cfg.referralBonus)||0,me=Number(cfg.refereeBonus)||0;
+  await updateDoc(doc(db,'users',rd.id),{balance:increment(ref),referralCount:increment(1),referralEarnings:increment(ref)});
+  await tx(rd.id,ref,'Referral Bonus','referral');
+  await updateDoc(doc(db,'users',user.uid),{balance:increment(me),referredBy:code});
+  if(me>0)await tx(user.uid,me,'Referral Applied','referral_applied');
+  render();
+  alertBox(me>0?`Code applied! You got ${fc(me)} coins.`:'Code applied!');
+ }catch(e){alert2('Error applying code.');}
+ loading(0);
+}
+
+// ---------- HISTORY ----------
+let hTab='rewards';
+function rHistory(v){
+ v.innerHTML=`<div class="rounded-3xl p-1.5" style="background:#fff;box-shadow:0 4px 14px rgba(0,47,158,.1)"><div class="rounded-3xl" style="background:linear-gradient(90deg,#d4e6fd,#d6f6f0)">${balCard().replace('soft p-3','p-3')}</div></div>
+ <div class="card p-4 mt-4"><div class="grid grid-cols-2 gap-3 mb-4"><button id="h-w" class="py-4 rounded-2xl font-bold" onclick="hSet('withdraw')">Withdraw History</button><button id="h-r" class="py-4 rounded-2xl font-bold" onclick="hSet('rewards')">Rewards History</button></div><div id="h-list" style="min-height:300px"></div></div>`;
+ hSet(hTab);
+}
+window.hSet=async t=>{hTab=t;
+ const on='btn',off='btn-out';$('#h-w').className='py-4 rounded-2xl font-bold '+(t==='withdraw'?on:off);$('#h-r').className='py-4 rounded-2xl font-bold '+(t==='rewards'?on:off);
+ const el=$('#h-list');el.innerHTML='<p class="text-center text-gray-400 py-10">Loading...</p>';
+ if(t==='withdraw'){await loadWithdrawList('#h-list',30);const e=$('#h-list');if(e&&e.textContent.includes('No withdrawals'))e.innerHTML='<p class="text-center text-gray-500 font-bold text-lg py-24">No history data available</p>';return;}
+ try{const s=await getDocs(query(collection(db,'users',user.uid,'transactions'),orderBy('timestamp','desc'),limit(50)));
+  if(!$('#h-list'))return;
+  if(s.empty){$('#h-list').innerHTML='<p class="text-center text-gray-500 font-bold text-lg py-24">No history data available</p>';return;}
+  $('#h-list').innerHTML=s.docs.map(d=>{const x=d.data(),neg=x.amount<0;return `<div class="rounded-2xl p-3 mb-3 flex items-center gap-3" style="background:#fffbe8;border:1.5px solid #f5e6a8"><div class="w-14 h-14 rounded-xl bg-white border flex items-center justify-center text-3xl">🪙</div><div class="flex-1 min-w-0"><p class="font-extrabold uppercase text-sm">${esc(x.type)}</p><p class="text-gray-500 text-sm truncate">Source: ${esc(x.source||x.description||'')}</p></div><div class="text-right"><p class="font-extrabold ${neg?'text-red-600':'text-green-600'}">${fc(Math.abs(x.amount))} coins</p><p class="text-xs text-gray-500">${x.timestamp?x.timestamp.toDate().toLocaleDateString('en-GB'):''}</p></div></div>`;}).join('');
+ }catch(e){$('#h-list').innerHTML='<p class="text-center text-red-500 py-10">Failed to load.</p>';}
+};
+
+// ---------- NOTIFICATIONS / RANKING ----------
+function rNotifs(v){
+ if(notifs[0])localStorage.setItem('seen_'+user.uid,String(notifs[0].id));
+ v.innerHTML=notifs.length?notifs.map(n=>`<div class="card p-4 mb-3"><div class="flex justify-between gap-2"><h3 class="font-extrabold">${esc(n.title)}</h3><span class="text-xs text-gray-400">${n.createdAt?n.createdAt.toDate().toLocaleDateString('en-IN'):''}</span></div><p class="text-gray-600 text-sm mt-1">${esc(n.message)}</p>${n.url?`<button onclick="openLink('${esc(n.url)}')" class="btn px-4 py-2 mt-3 text-sm">Open</button>`:''}</div>`).join(''):'<div class="card p-10 text-center text-gray-400">No notifications yet.</div>';
+ setTimeout(header,0);
+}
+async function rRanking(v){
+ v.innerHTML='<div class="card p-8 text-center text-gray-400">Loading...</div>';
+ try{const s=await getDocs(query(collection(db,'users'),orderBy('balance','desc'),limit(20)));
+  if(page!=='ranking')return;
+  const medal=['🥇','🥈','🥉'];
+  v.innerHTML=`<div class="card p-4 space-y-2">${s.docs.map((d,i)=>{const x=d.data(),me=d.id===user.uid;return `<div class="row" style="${me?'background:#e6ebfd;':''}"><span class="text-2xl w-9 text-center font-extrabold">${medal[i]||i+1}</span><p class="flex-1 font-bold truncate">${esc((x.name||'User').split(' ')[0])}${me?' (You)':''}</p><span class="font-extrabold text-[#002f9e]">🪙 ${fc(x.balance)}</span></div>`;}).join('')}</div>`;
+ }catch(e){v.innerHTML='<div class="card p-8 text-center text-gray-400">Ranking not available.</div>';}
+}
+window.render=render;
+setMode('login');ic();
+</script>
+</body>
+</html>
