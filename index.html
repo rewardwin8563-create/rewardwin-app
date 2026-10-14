@@ -15,10 +15,10 @@
 <meta name="robots" content="noindex,nofollow">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest"></script>
+<script defer src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{--blue:#002f9e;--blue2:#0a45c8;--bg:#eef2ff;--card:#fff;--soft:#eaeefd;}
-*{-webkit-tap-highlight-color:transparent;}
+*{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 body{font-family:'Poppins',sans-serif;background:var(--bg);color:#0f172a;user-select:none;}
 .hdr{background:linear-gradient(135deg,#001f7a,#0a45c8 70%,#0b57d8);border-radius:0 0 32px 32px;position:relative;overflow:hidden;}
 .hdr:before{content:'';position:absolute;left:-40px;top:-60px;width:260px;height:200px;background:#00258f;border-radius:50%;opacity:.7;}
@@ -166,24 +166,24 @@ $('#a-btn').onclick=async()=>{
    await setDoc(doc(db,'users',cr.user.uid),{uid:cr.user.uid,name,email,balance:bonus,wallet:0,referralCode:Math.random().toString(36).substring(2,10).toUpperCase(),referredBy:null,referralCount:0,referralEarnings:0,createdAt:serverTimestamp(),isBlocked:false,checkinStreak:0,lastCheckInDate:'1970-01-01',daily:{date:today()},completedAppTasks:[]});
    if(bonus>0)await tx(cr.user.uid,bonus,'Welcome Bonus','welcome_bonus');
   }
- }catch(e){alertBox(e.message.replace('Firebase: ',''));}
- loading(0);
+ }catch(e){loading(0);alertBox(e.message.replace('Firebase: ',''));}
 };
 
 async function tx(uid,amount,type,source){await addDoc(collection(db,'users',uid,'transactions'),{amount,type,source,description:source,timestamp:serverTimestamp()});}
 
 onAuthStateChanged(auth,async u=>{
- if(!u){stopLive();user=null;ud=null;$('#app').classList.add('hidden');$('#auth').classList.remove('hidden');$('#auth').classList.add('flex');hideSplash();return;}
- user=u;
+ if(!u){loading(0);stopLive();user=null;ud=null;$('#app').classList.add('hidden');$('#auth').classList.remove('hidden');$('#auth').classList.add('flex');hideSplash();return;}
+ user=u;loading(1);
+ $('#auth').classList.add('hidden');$('#auth').classList.remove('flex');
  if(unsubCfg)unsubCfg();
- unsubCfg=onSnapshot(doc(db,'config','main'),s=>{cfg={...DEF,...(s.exists()?s.data():{})};if(ud&&['home','wallet','profile'].includes(page)&&!$('#modal').innerHTML)render();});
+ unsubCfg=onSnapshot(doc(db,'config','main'),s=>{cfg={...DEF,...(s.exists()?s.data():{})};softRender(()=>ud&&TABS.includes(page));});
  let snap;for(let i=0;i<5;i++){snap=await getDoc(doc(db,'users',u.uid));if(snap.exists())break;await new Promise(r=>setTimeout(r,600));}
  ud=snap.exists()?snap.data():null;
- if(!ud){await signOut(auth);return;}
- if(ud.isBlocked){showBanned();return;}
+ if(!ud){loading(0);await signOut(auth);return;}
+ if(ud.isBlocked){loading(0);showBanned();return;}
  normDaily();
  $('#auth').classList.add('hidden');$('#auth').classList.remove('flex');$('#app').classList.remove('hidden');
- hideSplash();
+ hideSplash();loading(0);
  if(window.__pendingRef){const c=window.__pendingRef;window.__pendingRef='';applyReferral(c,true);}
  go('home',true);
  startLive(u.uid);
@@ -208,6 +208,19 @@ async function ensureUid(){
  return '';
 }
 
+// ---------- SMOOTH RENDER (laggy re-render + lost taps fix) ----------
+let touching=false,rtimer=null;
+document.addEventListener('touchstart',()=>{touching=true;},{passive:true});
+['touchend','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>{setTimeout(()=>{touching=false;},400);},{passive:true}));
+function softRender(cond){
+ clearTimeout(rtimer);
+ const fire=()=>{
+  if(touching||$('#modal').innerHTML){rtimer=setTimeout(fire,350);return;}
+  if(!cond||cond())render();
+ };
+ rtimer=setTimeout(fire,250);
+}
+
 // ---------- LIVE SYNC ----------
 function showBanned(){document.body.innerHTML='<div class="h-screen flex items-center justify-center p-6 text-center"><div class="card p-8"><h1 class="text-2xl font-extrabold text-red-600 mb-2">Account Banned</h1><p class="text-gray-600">Your account has been suspended by the administrator.</p></div></div>';}
 function stopLive(){[unsubUser,unsubNotif,unsubSubs,unsubW].forEach(f=>f&&f());unsubUser=unsubNotif=unsubSubs=unsubW=null;mySubs={};}
@@ -218,14 +231,12 @@ function startLive(uid){
   const d=s.data();if(d.isBlocked){stopLive();showBanned();return;}
   ud=d;normDaily();$$('.balcard').forEach(e=>e.innerHTML=balInner());
   if(first){first=false;return;}
-  if(!$('#modal').innerHTML){
-   if(page==='home'||page==='profile')render();
-   else if(page==='history')setTimeout(()=>{if(page==='history'&&!$('#modal').innerHTML)hSet(hTab);},700);
-  }
+  if(page==='home'||page==='profile')softRender(()=>page==='home'||page==='profile');
+  else if(page==='history'&&!$('#modal').innerHTML)setTimeout(()=>{if(page==='history'&&!$('#modal').innerHTML)hSet(hTab);},700);
  },()=>{});
  unsubNotif=onSnapshot(query(collection(db,'notifications'),orderBy('createdAt','desc'),limit(20)),s=>{
   notifs=s.docs.map(d=>({id:d.id,...d.data()}));
-  if(page==='notifications')render();else{header();ic();}
+  if(page==='notifications')softRender(()=>page==='notifications');else{header();ic();}
  },()=>{});
  unsubW=onSnapshot(query(collection(db,'withdrawals'),where('userId','==',uid)),()=>{
   if($('#modal').innerHTML)return;
@@ -234,7 +245,7 @@ function startLive(uid){
  unsubSubs=onSnapshot(query(collection(db,'taskSubmissions'),where('userId','==',uid)),s=>{
   mySubs={};
   s.docs.forEach(d=>{const x=d.data(),k=x.taskKey,p=mySubs[k];if(!p||(x.submittedAt?.seconds??1e12)>=(p.submittedAt?.seconds??1e12))mySubs[k]={id:d.id,...x};});
-  if(page==='home'&&!$('#modal').innerHTML)render();
+  if(page==='home')softRender(()=>page==='home');
  },()=>{});
 }
 function hideSplash(){const s=$('#splash');s.style.opacity=0;setTimeout(()=>s.style.display='none',500);}
