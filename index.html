@@ -324,7 +324,7 @@ window.checkin=async()=>{
   await addCoins(r,'Checkin Reward','checkins');
   ud.checkinStreak=streak+1;ud.lastCheckInDate=today();
   await updateDoc(doc(db,'users',user.uid),{checkinStreak:ud.checkinStreak,lastCheckInDate:ud.lastCheckInDate});
-  render();alertBox(`You received ${fc(r)} coins!`,'Daily Reward');
+  render();resultModal('🎁 Daily Reward',`You received ${fc(r)} coins!`,()=>{});
  }catch(e){alertBox(e.message);}
  loading(0);
 };
@@ -412,7 +412,7 @@ window.doSpin=async()=>{
   try{await addCoins(r,'Lucky Spin Reward','lucky_spin');}catch(e){}
   spinning=false;
   if(page==='spin'){render();document.body.style.background='linear-gradient(180deg,#001a8a,#0a45c8)';}
-  alertBox(`You won ${fc(r)} coins!`,'🎉 Congratulations');
+  resultModal('🎉 Congratulations',`You won ${fc(r)} coins!`,()=>{});
  },4300);
 };
 
