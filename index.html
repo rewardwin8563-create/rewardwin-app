@@ -159,19 +159,21 @@ $('#a-btn').onclick=async()=>{
    if(!name)throw new Error('Enter your name.');
    if(pass.length<6)throw new Error('Password must be at least 6 characters.');
    if(pass!==p2)throw new Error('Passwords do not match.');
-   window.__pendingRef=ref;
+   window.__pendingRef=ref;window.__signingUp=true;
    const cr=await createUserWithEmailAndPassword(auth,email,pass);
    await updateProfile(cr.user,{displayName:name});
    const bonus=Number(cfg.signupBonus)||0;
    await setDoc(doc(db,'users',cr.user.uid),{uid:cr.user.uid,name,email,balance:bonus,wallet:0,referralCode:Math.random().toString(36).substring(2,10).toUpperCase(),referredBy:null,referralCount:0,referralEarnings:0,createdAt:serverTimestamp(),isBlocked:false,checkinStreak:0,lastCheckInDate:'1970-01-01',daily:{date:today()},completedAppTasks:[]});
    if(bonus>0)await tx(cr.user.uid,bonus,'Welcome Bonus','welcome_bonus');
+   window.__signingUp=false;await handleUser(cr.user);
   }
- }catch(e){loading(0);alertBox(e.message.replace('Firebase: ',''));}
+ }catch(e){window.__signingUp=false;loading(0);alertBox(e.message.replace('Firebase: ',''));if(mode==='register'&&auth.currentUser){try{await signOut(auth);}catch(_){}}}
 };
 
 async function tx(uid,amount,type,source){await addDoc(collection(db,'users',uid,'transactions'),{amount,type,source,description:source,timestamp:serverTimestamp()});}
 
-onAuthStateChanged(auth,async u=>{
+onAuthStateChanged(auth,u=>{if(u&&window.__signingUp)return;handleUser(u);});
+async function handleUser(u){
  if(!u){loading(0);stopLive();user=null;ud=null;$('#app').classList.add('hidden');$('#auth').classList.remove('hidden');$('#auth').classList.add('flex');hideSplash();return;}
  user=u;loading(1);
  $('#auth').classList.add('hidden');$('#auth').classList.remove('flex');
@@ -188,7 +190,7 @@ onAuthStateChanged(auth,async u=>{
  go('home',true);
  startLive(u.uid);
  ensureUid();
-});
+}
 
 // ---------- AUTO PLAYER UID ----------
 let uidBusy=false;
